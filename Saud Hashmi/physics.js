@@ -1,127 +1,166 @@
 let physics = {
-  update(gameObj) {
-    //updating the game based on the physics we are applying later
-    this.gravity(gameObj.entities.mario); //updates mario
-    //apply gravity to each indexes of goomba, koopa, particle, mushroom
+	update(gameObj) {
+		this.gravity(gameObj.entities.mario); //updates mario
+		gameObj.entities.goombas.forEach((goomba) => {
+			this.gravity(goomba);
+		});
+		this.checkCollision(gameObj.entities.mario); //checks collision
+		this.entityMarioCol(gameObj);
+		this.bgEntityCollision(gameObj);
+		this.marioFallingCheck(gameObj);
+	},
+	gravity(entity) {
+		entity.velY += 1.1; //acceleration
+		entity.posY += entity.velY; //position change
+	},
+	checkCollision(entity) {
+		if (entity.posY + entity.height >= 200 && entity.velY > 0) {
+			entity.posY = 200;
+			entity.velY = 0;
+			entity.currentState = entity.states.standingAnim;
+		}
+	},
+	bgCollision(entity, gameObj) {
+		let scenery = gameObj.entities.scenery;
+		scenery.forEach((scene) => {
+			if (this.checkRectCollision(scene, entity)) {
+				// console.log(scene)
+				if (scene.type == "pipe" || scene.type == "stair") {
+					this.handleDirec(scene, entity);
+				} else if (scene.type == "ground") {
+					if (
+						entity.posY < scene.posY &&
+						entity.posX + entity.width > scene.posX &&
+						scene.posX + scene.posY > entity.posX &&
+						entity.velY >= 0
+					) {
+						entity.currentState = entity.states.standingAnim;
+						entity.posY = scene.posY - entity.height - 1;
+						entity.velY = 1.1;
+					}
+				}
+				// check
+			}
+		});
+	},
+	bgEntityCollision(gameObj) {
+		let mario = gameObj.entities.mario;
+		let goombas = gameObj.entities.goombas;
+		this.bgCollision(mario, gameObj);
+		goombas.forEach((goomba) => {
+			this.bgCollision(goomba, gameObj);
+		});
+	},
+	entityMarioCol(gameObj) {
+		let { goombas, mario } = gameObj.entities;
+		goombas.forEach((goomba) => {
+			if (this.checkRectCollision(goomba, mario)) {
+				this.handleCollision(mario, goomba, gameObj);
+			}
+		});
+	},
+	checkRectCollision(scene, mario) {
+		//x->r2>l1&&l2<r1
+		let l1 = scene.posX;
+		let l2 = mario.posX;
+		let r1 = scene.posX + scene.width;
+		let r2 = mario.posX + mario.width;
+		let t1 = scene.posY + scene.height;
+		let t2 = mario.posY + mario.height;
+		let b1 = scene.posY;
+		let b2 = mario.posY;
+		// y-> t2>b1&&t1>b2
+		if (r2 > l1 && l2 < r1 && t2 > b1 && t1 > b2) {
+			return true;
+		}
+	},
+	handleDirec(scene, entity) {
+		// left
+		if (entity.posX < scene.posX && entity.posY >= scene.posY) {
+			entity.posX = scene.posX - entity.width;
+			if (entity.type == "goomba") {
+				entity.currentDirection =
+					entity.currentDirection == "left" ? "right" : "left";
+			}
+		}
+		// right
+		if (entity.posX > scene.posX && entity.posY >= scene.posY) {
+			entity.posX = scene.posX + scene.width;
+			if (entity.type == "goomba") {
+				entity.currentDirection =
+					entity.currentDirection == "left" ? "right" : "left";
+			}
+		}
+		//top
+		if (
+			entity.posY < scene.posY &&
+			entity.posX + entity.width > scene.posX &&
+			scene.posX + scene.posY > entity.posX &&
+			entity.velY >= 0
+		) {
+			entity.currentState = entity.states.standingAnim;
+			entity.posY = scene.posY - entity.height - 1;
+			entity.velY = 0;
+		}
+	},
+	handleCollision(mario, entity, gameObj) {
+		if (entity.type == "goomba") {
+			// collision from left
+			if (mario.posX > entity.posX && mario.posY == 180) {
+				mario.posX = entity.posX - mario.width;
+				if (entity.currentState != entity.states.squashed) {
+					this.marioDeath(gameObj, mario);
+				}
+			}
 
-    //call all the methods we are applying
-    this.staticEntityCol(gameObj);
-    this.entityMarioCol(gameObj);
-    this.bgEntityCollision(gameObj);
-    this.marioFallingCheck(gameObj);
-    this.gameEndCheck(gameObj);
-  },
-  //gravity
-  gravity(entity) {
-    entity.velY += 1.1; //apply velocity of 1.1 to velY for falling down
-    entity.posY += entity.velY; //change positionY acc to velY
-  },
-  //checks collision to bricks and blocks and handles direction of mushrooms according to that
-  staticEntityCol(gameObj) {},
+			// collision from right
+			if (mario.posX < entity.posX && mario.posY == 180) {
+				mario.posX = entity.posX + mario.width;
+				if (entity.currentState != entity.states.squashed) {
+					this.marioDeath(gameObj, mario);
+				}
+			}
 
-  //collision of mario to all the other entities of the game
-  entityMarioCol(gameObj) {
-    let { goombas, mario, koopas, bricks, blocks, mushrooms } =
-      gameObj.entities;
-    //apply for each loop and checkRectCollision of mario and entity and then handle its collision
-  },
-
-  //handles collision between mario and entity
-  handleCollision(mario, entity, gameObj) {
-    //check from which direction collision happened with the entity
-    if (entity.type == "goomba" || entity.type == "koopa") {
-      //collision from left
-      if (mario.posX > entity.posX && mario.posY == 175.2) {
-      }
-      //collision from  right
-      if (mario.posX < entity.posX && mario.posY == 175.2) {
-      }
-      //collision from top - death of enemy
-    }
-  },
-
-  //enemy death physics
-  enemyDeath(gameObj, entity, mario) {
-    if (entity.type == "goomba") {
-      //squashed
-    } else if (entity.type == "koopa") {
-      //first increase velocity and then fall
-    }
-    setTimeout(() => {
-      if (entity.type == "goomba") {
-        //find the index to which number of element, mario has squashed
-        //we have squashed so we need to remove the enemy
-      } else if (entity.type == "koopa") {
-        //find the index to which number of element, mario has squashed
-        //we have squashed so we need to remove the enemy
-      }
-    }, 200);
-  },
-
-  //koopa hiding physics
-  koopaHide(entity, mario) {
-    //change currentState
-    //change posX according to currentDirection
-  },
-  koopaSlide(entity, mario) {
-    //change currentState
-    //koopa will slide according to direction of mario so that mario gets enough time to jump again
-    //change posX according to currentDirection
-  },
-
-  //mario death physics
-  marioDeath(gameObj, mario) {
-    //make velX 0, velY negative so that it can fall and change the state to dead
-
-    //stop user from controlling the game once he is dead
-    setTimeout(() => {
-      //after collision, restart the game after 3 sec
-    }, 3000);
-  },
-
-  //collision with entities
-  bgEntityCollision(gameObj) {},
-
-  bgCollision(entity, gameObj) {
-    let scenery = gameObj.entities.scenery;
-    scenery.forEach((scene) => {
-      //check the collision of mario with scenery items and do things accordingly
-      //like collision with pipe should stop mario and it could move only if it jumps
-    });
-  },
-
-  checkRectCollision(entity1, entity2) {
-    //rectangle collision concept- important!!
-  },
-  handleDirec(scene, entity) {
-    //handle direction method for mario
-    //bottom
-    if (
-      entity.posY > scene.posY &&
-      entity.posX + entity.width > scene.posX &&
-      scene.posX + scene.posY > entity.posX &&
-      entity.velY < 0
-    ) {
-    }
-    if (entity.posX < scene.posX && entity.posY >= scene.posY) {
-      // left
-    }
-    // right
-    if (entity.posX > scene.posX && entity.posY >= scene.posY) {
-    }
-    //top
-    if (
-      entity.posY < scene.posY &&
-      entity.posX + entity.width > scene.posX &&
-      scene.posX + scene.posY > entity.posX &&
-      entity.velY >= 0
-    ) {
-    }
-  },
-
-  //checking if mario has fallen in a space
-  marioFallingCheck(gameObj) {},
-
-  //checking if game has ended
-  gameEndCheck(gameObj) {},
+			// collision from top - death of enemy
+			// if (
+			// 	//add later
+			// 	mario.posY < entity.posY &&
+			// 	mario.posX < entity.posX + entity.width &&
+			// 	mario.posX + mario.width > entity.posX
+			// ) {
+			// 	if (
+			// 		entity.currentState != entity.states.squashed &&
+			// 		mario.pointer != "dead"
+			// 	) {
+			// 		this.enemyDeath(gameObj, entity, mario);
+			// 	}
+			// }
+		}
+	},
+	marioFallingCheck(gameObj) {
+		if (gameObj.entities.mario.posY >= 200) {
+			// alert('Game over');
+			gameObj.entities.mario.velX = 0;
+			gameObj.entities.mario.velY = 0;
+			gameObj.reset();
+		}
+	},
+	marioDeath(gameObj, mario) {
+		mario.velX = 0;
+		mario.currentState = mario.states.dead;
+		mario.velY = -14;
+		mario.pointer = "dead";
+		gameObj.userControl = false; //after introducing userCOntrol
+		setTimeout(() => {
+			gameObj.reset(); //after collision, restart the game after 3 sec
+		}, 3000);
+	},
+	enemyDeath(gameObj, entity, mario) {
+		entity.pointer = "squashed";
+		entity.currentState = entity.states.squashed;
+		setTimeout(() => {
+			let idx = gameObj.entities.goombas.indexOf(entity); //finding the index to which number of element, mario has squashed
+			delete gameObj.entities.goombas[idx]; //we have squashed so we need to remove the enemy
+		}, 200);
+	},
 };
