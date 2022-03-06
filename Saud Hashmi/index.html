@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Super Mario JS</title>
 
-    <style>
-      * {
-        margin: 0px;
-      }
-    </style>
-  </head>
-  <body>
-    <!--default size of canvas 300x150-->
-    <canvas class="board"></canvas>
-    <!-- note: if we have a js file below another js file, the below file can access all the variables of the above file like game.js can access preload.js -->
-    <!-- preload file is used to preload the assets of the game, so that after starting, game can run fastly without any loading -->
-    <!-- link preload.js -->
-    <!-- link coordinates.js -->
-    <!-- link input.js -->
-    <!-- link entityparent.js -->
-    <!-- link bgblueprint.js -->
-    <!-- link mario.js -->
-    <!-- link goomba.js -->
-    <!-- link koopa.js -->
-    <!-- link particles.js -->
-    <!-- link bricks.js -->
-    <!-- link coin.js -->
-    <!-- link mystery.js -->
-    <!-- link levelbuilder.js -->
-    <!-- link physics.js -->
-    <!-- link animation.js -->
-    <!-- link movement.js -->
-    <!-- link game.js -->
-    <!--use defer attribute to load js only after html canvas loads completely-->
-  </body>
+		<style>
+			*, body {
+				margin: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<!--default size of canvas 300x150-->
+		<canvas class="board"></canvas>
+		<!-- note: if we have a js file below another js file, the below file can access all the variables of the above file like game.js can access preload.js -->
+		<!-- preload file is used to preload the assets of the game, so that after starting, game can run fastly without any loading -->
+		<script src="preload.js" defer></script>
+		<script src="assets/Map/coordinates.js" defer></script>
+		<script src="input.js" defer></script>
+		<script src="entityParent.js" defer></script>
+		<script src="bgBlueprint.js" defer></script>
+		<script src="Entities/mario.js" defer></script>
+		<script src="Entities/goomba.js" defer></script>
+		<!-- link koopa.js -->
+		<!-- link particles.js -->
+		<!-- link bricks.js -->
+		<!-- link coin.js -->
+		<!-- link mystery.js -->
+		<script src="levelBuilder.js" defer></script>
+		<script src="physics.js" defer></script>
+		<script src="animation.js" defer></script>
+		<script src="movement.js" defer></script>
+		<script src="game.js" defer></script>
+		<!--use defer attribute to load js only after html canvas loads completely-->
+	</body>
 </html>
